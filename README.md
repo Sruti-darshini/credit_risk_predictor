@@ -4,7 +4,7 @@ A Streamlit-based web application for predicting credit risk and determining app
 
 ## Features
 
-- User-friendly web interface for inputting customer information
+- User-friendly web interface for inputting customer information.
 - PAN card upload functionality for identity verification
 - Real-time credit risk assessment
 - Interest rate prediction based on customer profile

@@ -2,10 +2,18 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, mean_squared_error
+import sys
 from preprocessing import DataPreprocessor, load_and_preprocess_data
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class CreditRiskModel:
     def __init__(self):
@@ -33,8 +41,13 @@ class CreditRiskModel:
     
     def train_models(self, data_path=None):
         """Train models from scratch"""
+        # Import heavy sklearn submodules only when training is actually invoked,
+        # so that PyInstaller does not bundle them for inference-only use.
+        from sklearn.linear_model import LogisticRegression, LinearRegression
+        from sklearn.model_selection import train_test_split
+        from sklearn.metrics import accuracy_score, mean_squared_error
         if data_path is None:
-            data_path = 'credit_risk_dataset.csv'
+            data_path = resource_path('credit_risk_dataset.csv')
             
         # Load and preprocess data
         data = load_and_preprocess_data(data_path)

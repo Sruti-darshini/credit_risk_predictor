@@ -1,11 +1,47 @@
+import os
+import threading
+import time
 import streamlit as st
 import pandas as pd
 import numpy as np
-import time
 from model import CreditRiskModel
 from preprocessing import preprocess_input
 
+def _start_idle_shutdown_monitor():
+    # Periodically check if there are any active sessions; if none, exit the process.
+    # Uses Streamlit's runtime to enumerate sessions.
+    def _monitor():
+        try:
+            from streamlit.runtime.scriptrunner import get_script_run_ctx
+            from streamlit.runtime.runtime import Runtime
+        except Exception:
+            return
+        # Give the app time to start
+        time.sleep(5)
+        while True:
+            try:
+                runtime = Runtime.instance()
+                has_sessions = False
+                if runtime is not None:
+                    session_infos = list(runtime._session_mgr.list_active_session_infos())
+                    has_sessions = len(session_infos) > 0
+                # If no sessions or the current script context is gone, exit.
+                ctx = None
+                try:
+                    ctx = get_script_run_ctx()
+                except Exception:
+                    pass
+                if (not has_sessions) or (ctx is None):
+                    os._exit(0)
+            except Exception:
+                pass
+            time.sleep(10)
+    t = threading.Thread(target=_monitor, name="st-idle-shutdown", daemon=True)
+    t.start()
+
 def main():
+    _start_idle_shutdown_monitor()
+    
     st.set_page_config(
         page_title="Credit Risk Analysis",
         page_icon="📊",
